@@ -1,0 +1,7 @@
+vs has been joined
+density has been joined
+inversion parameter is impedance
+inversion has not density
+velocity_average=2668.870361
+landa=10
+max=50,length_vp=50,length_vs=50,length_density=50,length_qp=50,length_qs=50

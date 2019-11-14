@@ -1,0 +1,369 @@
+#define pai 3.1415926
+
+void input_file_xyz_boundary(char *filename,float *data,int nx,int ny,int nz,int bl,int bf,int bu,int nxb,int nyb,int nzb)
+//input_file_xyz_boundary(velocity_name,velocity_pml,nx,ny,nz,bl,bf,bu,nnx,nny,nnz);
+{
+	FILE *fp;
+	int ix,iy,iz;
+	if((fp=fopen(filename,"rb"))==NULL)
+	{	
+		printf("Can not oen this file : %s\n",filename);
+		exit(0);
+	}
+
+	fp=fopen(filename,"rb");
+	for(ix=0;ix<nx;ix++)
+	{
+		for(iy=0;iy<ny;iy++)
+		{
+			for(iz=0;iz<nz;iz++)
+			{
+				fread(&data[(iz+bu)*nxb*nyb+(iy+bf)*nxb+ix+bl],sizeof(float),1,fp);
+			}
+		}
+	}
+	fclose(fp);
+}
+
+void input_file_xyz(char *filename,float *data,int nxb,int nyb,int nzb)
+//input_file_xyz("./someoutput/s_vp.bin",velocity_pml,nnx,nny,nnz);
+{
+	FILE *fp;
+	int ix,iy,iz;
+	if((fp=fopen(filename,"rb"))==NULL)
+	{	
+		printf("Can not oen this file : %s\n",filename);
+		exit(0);
+	}
+
+	fp=fopen(filename,"rb");
+	for(ix=0;ix<nxb;ix++)
+	{
+		for(iy=0;iy<nyb;iy++)
+		{
+			for(iz=0;iz<nzb;iz++)
+			{
+				fread(&data[(iz)*nxb*nyb+(iy)*nxb+ix],sizeof(float),1,fp);
+			}
+		}
+	}
+	fclose(fp);
+}
+
+
+void output_file_xyz_boundary(char *filename,float *data,int nx,int ny,int nz,int bl,int bf,int bu,int nxb,int nyb,int nzb)
+{
+	FILE *fp;
+	int ix,iy,iz;
+	if((fp=fopen(filename,"wb+"))==NULL)
+	{	
+		printf("Can not oen this file : %s\n",filename);
+		exit(0);
+	}
+
+	fp=fopen(filename,"wb+");
+	for(ix=0;ix<nx;ix++)
+	{
+		for(iy=0;iy<ny;iy++)
+		{
+			for(iz=0;iz<nz;iz++)
+			{
+				fwrite(&data[(iz+bu)*nxb*nyb+(iy+bf)*nxb+ix+bl],sizeof(float),1,fp);
+			}
+		}
+	}
+	fclose(fp);
+}
+
+void output_file_xyz(char *filename,float *data,int nxb,int nyb,int nzb)
+{
+	FILE *fp;
+	int ix,iy,iz;
+	if((fp=fopen(filename,"wb+"))==NULL)
+	{	
+		printf("Can not oen this file : %s\n",filename);
+		exit(0);
+	}
+
+	fp=fopen(filename,"wb+");
+	for(ix=0;ix<nxb;ix++)
+	{
+		for(iy=0;iy<nyb;iy++)
+		{
+			for(iz=0;iz<nzb;iz++)
+			{
+				fwrite(&data[iz*nyb*nxb+iy*nxb+ix],sizeof(float),1,fp);
+			}
+		}
+	}
+	fclose(fp);
+}
+
+void output_3d(char *filename,float *Array1d,int nx,int ny,int nz)
+{
+	FILE *fp;
+	int ix,iy,iz;
+	fp=fopen(filename,"wb+");
+	for(ix=0;ix<nx;ix++)
+	{
+		for(iy=0;iy<ny;iy++)
+		{
+			for(iz=0;iz<nz;iz++)
+			{
+				fwrite(&Array1d[iz*nx*ny+iy*nx+ix],sizeof(float),1,fp);
+			}
+		}
+	}
+	fclose(fp);
+
+}
+
+
+void output_3d_cut_boundary(char *filename,float *Array1d,int nx,int ny,int nz,int bl,int bf,int bu,int nxb,int nyb)
+{
+	FILE *fp;
+	int ix,iy,iz;
+	fp=fopen(filename,"wb+");
+	for(ix=0;ix<nx;ix++)
+	{
+		for(iy=0;iy<ny;iy++)
+		{
+			for(iz=0;iz<nz;iz++)
+			{
+				fwrite(&Array1d[(iz+bu)*nxb*nyb+(iy+bf)*nxb+ix+bl],sizeof(float),1,fp);
+			}
+		}
+	}
+	fclose(fp);
+
+}
+
+void add_pml_layers_v_h(float *v_h,int nx,int ny,int nz,int bl,int bf,int bu,int nxb,int nyb,int nzb)
+{
+	int ix,iy,iz;
+//l	3
+
+	for(iy=bf;iy<ny+bf;iy++)
+	for(ix=0;ix<bl;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+iy*nxb+bl];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][iy][bl];
+	}
+
+//r	4
+	for(iy=bf;iy<ny+bf;iy++)
+	for(ix=bl+nx;ix<nxb;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+iy*nxb+bl+nx-1];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][iy][bl+nx-1];
+	}
+
+//f	5
+	for(iy=0;iy<bf;iy++)
+	for(ix=bl;ix<nx+bl;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+bf*nxb+ix];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][bf][ix];
+	}
+
+
+//b	6
+
+	for(iy=bf+ny;iy<nyb;iy++)
+	for(ix=bl;ix<nx+bl;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+(bf+ny-1)*nxb+ix];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][bf+ny-1][ix];
+	}
+
+
+
+
+
+//fl	11
+	for(iy=0;iy<bf;iy++)
+	for(ix=0;ix<bl;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+bf*nxb+bl];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][bf][bl];
+	}
+
+
+//fr	12
+
+	for(iy=0;iy<bf;iy++)
+	for(ix=bl+nx;ix<nxb;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+bf*nxb+bl+nx-1];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][bf][bl+nx-1];
+	}
+
+
+
+
+//bl	13
+
+	for(iy=bf+ny;iy<nyb;iy++)
+	for(ix=0;ix<bl;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+(bf+ny-1)*nxb+bl];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][bf+ny-1][bl];
+	}
+
+
+
+
+//br	14
+
+
+
+	for(iy=bf+ny;iy<nyb;iy++)
+	for(ix=bl+nx;ix<nxb;ix++)
+	for(iz=bu;iz<nz+bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz*nyb*nxb+(bf+ny-1)*nxb+bl+nx-1];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[iz][bf+ny-1][bl+nx-1];
+	}
+
+
+
+//u_all
+
+
+	for(iy=0;iy<nyb;iy++)
+	for(ix=0;ix<nxb;ix++)
+	for(iz=0;iz<bu;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[bu*nyb*nxb+iy*nxb+ix];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[bu][iy][ix];
+	}
+
+
+//d_all
+
+
+	for(iy=0;iy<nyb;iy++)
+	for(ix=0;ix<nxb;ix++)
+	for(iz=bu+nz;iz<nzb;iz++)
+	{
+	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[(bu+nz-1)*nyb*nxb+iy*nxb+ix];
+//	v_h[iz*nyb*nxb+iy*nxb+ix]=v_h[bu+nz-1][iy][ix];
+	}
+}
+
+void coe_attenuation_3d_new2(float *att_h,int nx,int ny,int nz,int bu,int bd,int bl,int br,int bf,int bb,float att_coe)
+{
+	int ix,iy,iz,i,nxb,nyb,nzb;
+	//int ran;
+	//ran=0;
+	//float temp;
+
+	nxb=nx+bl+br;
+	nyb=ny+bf+bb;
+	nzb=nz+bu+bd;
+	
+	float *distance_u,*distance_d,*distance_l,*distance_r,*distance_f,*distance_b;
+
+	distance_u=alloc1float(bu);
+	distance_d=alloc1float(bd);
+	distance_l=alloc1float(bl);
+	distance_r=alloc1float(br);
+	distance_f=alloc1float(bf);
+	distance_b=alloc1float(bb);
+
+
+	for(i=0;i<bu;i++)
+	{
+		distance_u[i]=att_coe*(1.0-cos((pai/2*(bu-i-1)/(bu-1))));
+	}
+
+
+	for(i=0;i<bd;i++)
+	{
+		distance_d[i]=att_coe*(1.0-cos((pai/2*i/(bd-1))));
+	}
+
+	for(i=0;i<bl;i++)
+	{
+		distance_l[i]=att_coe*(1.0-cos((pai/2*(bl-i-1)/(bl-1))));
+	}
+
+
+	for(i=0;i<br;i++)
+	{
+		distance_r[i]=att_coe*(1.0-cos((pai/2*i/(br-1))));
+	}
+
+	for(i=0;i<bf;i++)
+	{
+		distance_f[i]=att_coe*(1.0-cos((pai/2*(bf-i-1)/(bf-1))));
+	}
+	for(i=0;i<bb;i++)
+	{
+		distance_b[i]=att_coe*(1.0-cos((pai/2*i/(bb-1))));
+	}
+
+	//temp=1;
+	
+//u
+	for(iy=0;iy<nyb;iy++)
+	for(ix=0;ix<nxb;ix++)
+	for(iz=0;iz<bu;iz++) 
+	{
+		att_h[iz*nxb*nyb+iy*nxb+ix]+=distance_u[iz];
+	}
+
+//d
+	for(iy=0;iy<nyb;iy++)
+	for(ix=0;ix<nxb;ix++)
+	for(iz=0;iz<bd;iz++) 
+	{
+		att_h[(bu+nz+iz)*nxb*nyb+iy*nxb+ix]+=distance_d[iz];//att_h[iy*nzb*nxb+ix*nzb+iz]*distance_d[nzb-iz-1];
+	}
+
+//l
+	for(iy=0;iy<nyb;iy++)
+	for(ix=0;ix<bl;ix++)
+	for(iz=0;iz<nzb;iz++)
+	{
+		att_h[iz*nxb*nyb+iy*nxb+ix]+=distance_l[ix];//att_h[iy*nzb*nxb+ix*nzb+iz]*distance_l[ix];
+	}
+//r
+	for(iy=0;iy<nyb;iy++)
+	for(ix=0;ix<br;ix++) 
+	for(iz=0;iz<nzb;iz++)
+	{
+		att_h[iz*nxb*nyb+iy*nxb+bl+nx+ix]+=distance_r[ix];//att_h[iy*nzb*nxb+ix*nzb+iz]*distance_r[nxb-ix-1];
+	}
+
+//f
+	for(iy=0;iy<bf;iy++)
+	for(ix=0;ix<nxb;ix++)
+	for(iz=0;iz<nzb;iz++)
+	{
+		att_h[iz*nxb*nyb+iy*nxb+ix]+=distance_f[iy];//att_h[iy*nzb*nxb+ix*nzb+iz]*distance_f[iy];
+	}
+
+//b
+	for(iy=0;iy<bb;iy++) 
+	for(ix=0;ix<nxb;ix++)
+	for(iz=0;iz<nzb;iz++)
+	{
+		att_h[iz*nxb*nyb+(bf+ny+iy)*nxb+ix]+=distance_b[iy];//att_h[iy*nzb*nxb+ix*nzb+iz]*distance_b[nyb-iy-1];
+	}
+
+
+	free1float(distance_u);
+	free1float(distance_d);
+	free1float(distance_l);
+	free1float(distance_r);
+	free1float(distance_f);
+	free1float(distance_b);
+}

@@ -1,0 +1,142 @@
+
+//////////////////////GPU_switch  GPU_start GPU_N
+		int RTM;
+		int GPU_switch,GPU_N,GPU_start;
+		int exchange_device_bool;
+
+///////////////////////one half of space-domain
+		//int radius;
+		
+///////////////////////lt dt freq
+		int lt;		
+		float dt,freq;
+
+
+////////////////////////if or else join model parameter
+		char *infile_shot_name;
+		int join_vs,join_den,join_shot,join_wavefield,wavefield_interval;
+
+
+/////////////////////model parameter
+		int nx,ny,nz;
+		float dx,dy,dz;
+
+
+/////////////////////shot parameter
+		int shot_num_x,shot_num_y,shot_num_z;
+		int shot_start_x,shot_interval_x;
+		int shot_start_y,shot_interval_y;
+		int shot_start_z,shot_interval_z;
+
+		
+/////////////////////receiver parameter
+		int receiver_num_x,receiver_num_y,receiver_num_z;
+		int receiver_start_x,receiver_interval_x;
+		int receiver_start_y,receiver_interval_y;
+		int receiver_start_z,receiver_interval_z;
+		int receiver_offset,receiver_mark;
+
+	
+/////////////////////boundary parameter
+		int bu,bd,bl,br,bf,bb;
+		//int boundary_up,boundary_down,boundary_left,boundary_right,boundary_front,boundary_back;
+		float coe_att;
+
+		
+/////////////////////velocity and density parameter
+		float velocity_multiple,smooth_time_vp,smooth_time_vs,smooth_time_density;
+	
+
+		char *velocity_name;	
+
+		char *velocity1_name;		
+
+		char *density_name;
+
+				
+		char *s_velocity_name;
+		
+		char *s_velocity1_name;
+	
+		char *s_density_name;
+		
+//////////////////////some precondition operation
+
+		int add_receiver_bool;
+		int cut_direct_wave;
+		int laplace,laplace_compensate;
+		int vsp,vsp_precon;
+		int precon,precon_z1,precon_z2;	
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////The below space don't need to input in sh program////////////////////////////////////////////////////
+////////////////////////////////////////////////The below space don't need to input in sh program////////////////////////////////////////////////////		
+////////////////////////////////////////////////The below space don't need to input in sh program////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define MAX_GPU_COUNT 6
+#define radius 6
+#define pai 3.1415926
+#define Block_Size  512	/* vector computation blocklength */
+#define scale 9
+
+/////record time 
+
+		clock_t first_time,end_time;
+		double duration_time;
+
+		float mstimer=0.0,totaltime_Modeling=0.0,totaltime_RTM=0.0;
+
+///////filenmae
+		char filename[500],filename1[500],filename2[500];
+
+		FILE *logfile=NULL,*openfile=NULL;
+
+/////////////////GPU
+		int GPU_Read;
+		int gpuid[MAX_GPU_COUNT];
+
+/////////////////array
+		int wavelet_length,wavelet_half;
+		float *wavelet,*wavelet_integral;
+		
+		float *coe_opt;
+
+		float *velocity_pml,*velocity1_pml,*density_pml;
+		float *att_pml;
+
+		float *shot_xy_id;
+				
+		float *wf_3d;
+////////////////int or float 
+
+		float coe_x,coe_y,coe_z;
+
+		int nnx,nny,nnz;
+		
+		int nnz_device,nnz_device_append,nnz_residual;
+
+		int nnx_radius,nny_radius,nnz_radius;
+
+
+		
+		int ix,iy,iz;
+		int it,izz;
+
+		float gpu_memory_size;
+
+
+		int is,isx,isy,isz;
+		int sx,sy,sz;
+		int sx_real,sy_real,sz_real;
+		int choose_ns;
+
+		int rx_max,ry_max,rz_max;
+		int choose_re;
+
+		float ***obs_shot_x_all,***obs_shot_y_all,***obs_shot_z_all;
+		
+		float amp_max=0,tp_max=0;
+		int amp_max_idx=0,tp_max_idx=0;
+		int wavefield_mul;
+

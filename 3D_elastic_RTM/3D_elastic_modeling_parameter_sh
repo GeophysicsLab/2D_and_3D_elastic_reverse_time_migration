@@ -1,0 +1,164 @@
+
+void elastic_modeling_parameter_input()
+{
+///////////////////////GPU_switch  GPU_start GPU_N
+		//int GPU_switch,GPU_N,GPU_start;
+		if(!getparint("RTM",&RTM))								err("RTM is not set!");
+		if(!getparint("GPU_switch",&GPU_switch))						err("GPU_switch is not set!");
+		if(!getparint("GPU_N",&GPU_N))							err("GPU_N is not set!");
+		if(!getparint("GPU_start",&GPU_start))						err("GPU_start is not set!");
+		if(!getparint("exchange_device_bool",&exchange_device_bool))			err("exchange_device_bool is not set!");
+
+///////////////////////one half of space-domain
+		//int radius;
+		//if(!getparint("radius",&radius))				err("radius is not set!");///radius  radius radius radius radius
+
+///////////////////////lt dt freq
+		//int lt;		
+		//float dt,freq;
+
+		if(!getparint("lt",&lt))					err("lt is not set!");
+		if(!getparfloat("dt",&dt))					err("dt is not set!");
+		if(!getparfloat("freq",&freq))				err("freq is not set!");
+
+
+//////////////////////if or else
+		//int join_vs,join_den,join_shot,join_wavefield,wavefield_interval;
+
+		if(!getparint("join_vs",&join_vs))				err("join_vs is not set!");////join_vs=1 denote input s wave velocity(velocity1)
+		if(!getparint("join_den",&join_den))			err("join_den is not set!");////join_den=1 denote input density
+		if(!getparint("join_shot",&join_shot))			err("join_shot is not set!");////join_shot=1 denote obs_x_shot and obs_z_shot has gotten
+		if(!getparint("join_wavefield",&join_wavefield))		err("join_wavefield is not set!");////join_shot=1 denote obs_x_shot and obs_z_shot has gotten
+		if(!getparint("wavefield_interval",&wavefield_interval))	err("wavefield_interval is not set!");////join_shot=1 denote obs_x_shot and obs_z_shot has gotten
+		if(!getparstring("infile_shot_name",&infile_shot_name))	err("infile_shot_name is not set!");////join_shot=1 denote obs_x_shot and obs_z_shot has gotten
+/////////////////////model parameter
+		//int nx,ny,nz;
+		//float dx,dy,dz;
+
+		if(!getparint("nx",&nx))					err("nx is not set!");
+		if(!getparint("ny",&ny))					err("ny is not set!");
+		if(!getparint("nz",&nz))					err("nz is not set!");
+
+		if(!getparfloat("dx",&dx))					err("dx is not set!");
+		if(!getparfloat("dy",&dy))					err("dy is not set!");
+		if(!getparfloat("dz",&dz))					err("dz is not set!");
+
+/////////////////////shot parameter
+		//int shot_num_x,shot_num_y,shot_num_z;
+		//int shot_start_x,shot_interval_x;
+		//int shot_start_y,shot_interval_y;
+		//int shot_start_z,shot_interval_z;
+
+		if(!getparint("shot_num_x",&shot_num_x))				err("shot_num_x is not set!");
+		if(!getparint("shot_num_y",&shot_num_y))				err("shot_num_y is not set!");
+		if(!getparint("shot_num_z",&shot_num_z))				err("shot_num_z is not set!");
+
+		if(!getparint("shot_start_x",&shot_start_x))			err("shot_start_x is not set!");
+		if(!getparint("shot_interval_x",&shot_interval_x))			err("shot_interval_x is not set!");
+
+		if(!getparint("shot_start_y",&shot_start_y))			err("shot_start_y is not set!");
+		if(!getparint("shot_interval_y",&shot_interval_y))			err("shot_interval_y is not set!");
+
+		if(!getparint("shot_start_z",&shot_start_z))			err("shot_start_z is not set!");
+		if(!getparint("shot_interval_z",&shot_interval_z))			err("shot_interval_z is not set!");
+
+		
+/////////////////////receiver parameter
+		//int receiver_num_x,receiver_num_y,receiver_num_z;
+		//int receiver_start_x,receiver_interval_x;
+		//int receiver_start_y,receiver_interval_y;
+		//int receiver_start_z,receiver_interval_z;
+		//int receiver_offset,receiver_mark;
+
+		if(!getparint("receiver_num_x",&receiver_num_x))			err("receiver_num_x is not set!");
+		if(!getparint("receiver_num_y",&receiver_num_y))			err("receiver_num_y is not set!");
+		if(!getparint("receiver_num_z",&receiver_num_z))			err("receiver_num_z is not set!");
+
+		if(!getparint("receiver_start_x",&receiver_start_x))		err("receiver_start_x is not set!");
+		if(!getparint("receiver_interval_x",&receiver_interval_x))	err("receiver_interval_x is not set!");
+
+		if(!getparint("receiver_start_y",&receiver_start_y))		err("receiver_start_y is not set!");
+		if(!getparint("receiver_interval_y",&receiver_interval_y))	err("receiver_interval_y is not set!");
+
+		if(!getparint("receiver_start_z",&receiver_start_z))		err("receiver_start_z is not set!");
+		if(!getparint("receiver_interval_z",&receiver_interval_z))	err("receiver_interval_z is not set!");
+		
+		if(!getparint("receiver_offset",&receiver_offset))			err("receiver_offset is not set!");
+		if(!getparint("receiver_mark",&receiver_mark))			err("receiver_mark is not set!");
+
+/////////////////////boundary parameter
+		//int boundary_up,boundary_down,boundary_left,boundary_right,boundary_front,boundary_back;
+		//float coe_att;
+
+		if(!getparint("boundary_up",&bu))				err("boundary_up is not set!");
+		if(!getparint("boundary_down",&bd))				err("boundary_down is not set!");
+
+		if(!getparint("boundary_left",&bl))				err("boundary_left is not set!");
+		if(!getparint("boundary_right",&br))			err("boundary_right is not set!");
+
+		if(!getparint("boundary_front",&bf))			err("boundary_front is not set!");
+		if(!getparint("boundary_back",&bb))				err("boundary_back is not set!");
+
+		if(!getparfloat("coe_attenuation",&coe_att))		err("coe_attenuation is not set!");
+
+/////////////////////velocity and density parameter
+		//float velocity_multiple,smooth_time_vp,smooth_time_vs,smooth_time_density;
+
+		if(!getparfloat("velocity_multiple",&velocity_multiple))		err("velocity_multiple is not set!");///velocity smooth 2017年08月15日 星期二 09时57分09秒
+
+		if(!getparfloat("smooth_time_vp",&smooth_time_vp))			err("smooth_time_vp is not set!");///velocity smooth 2017年08月15日 星期二 09时57分09秒 
+
+		if(!getparfloat("smooth_time_vs",&smooth_time_vs))			err("smooth_time_vs is not set!");///velocity smooth 2017年08月15日 星期二 09时57分09秒
+
+		if(!getparfloat("smooth_time_density",&smooth_time_density))	err("smooth_time_density is not set!");///velocity smooth 2017年08月15日 星期二 09时57分09秒
+
+		//char *velocity_name;
+		if(!getparstring("velocity",&velocity_name))			err("can not read vp model!");
+
+		//char *velocity1_name;
+		if(!getparstring("velocity1",&velocity1_name))			err("can not read vs model!");
+
+		//char *density_name;
+		if(!getparstring("density",&density_name))				err("can not read density model!");		
+
+		//////////2017年03月07日 星期二 21时46分03秒 
+		//char *s_velocity_name;
+		if(smooth_time_vp==0)
+		{		
+			if(!getparstring("s_velocity",&s_velocity_name))		err("can not read s_vp model!");
+
+		}///velocity smooth 2017年08月15日 星期二 09时57分09秒
+
+		//char *s_velocity1_name;
+		if(smooth_time_vs==0)
+		{
+			if(!getparstring("s_velocity1",&s_velocity1_name))		err("can not read s_vs model!");
+		}///velocity smooth 2017年08月15日 星期二 09时57分09秒
+
+		//char *s_density_name;
+		if(smooth_time_density==0)
+		{	
+			if(!getparstring("s_density",&s_density_name))		err("can not read s_density model!");
+		}///velocity smooth 2017年08月15日 星期二 09时57分09秒
+
+
+//////////////////////some precondition operation
+		//int  add_receiver_bool;
+		//int laplace,laplace_compensate;
+		//int vsp,vsp_precon;
+
+		if(!getparint("add_receiver_bool",&add_receiver_bool))			err("add_receiver_bool is not set!");
+
+		if(!getparint("cut_direct_wave",&cut_direct_wave))				err("cut_direct_wave is not set!");	
+
+		if(!getparint("laplace",&laplace))						err("laplace is not set!");
+		if(!getparint("laplace_compensate",&laplace_compensate))			err("laplace_compensate is not set!");
+		
+		if(!getparint("vsp",&vsp))							err("vsp is not set!");
+		if(!getparint("vsp_precon",&vsp_precon))					err("vsp_precon is not set!");/////////for vsp???/////////////////for vsp.............2017年03月14日 星期二 08时32分25秒
+
+		if(!getparint("precon",&precon))						err("precon is not set!");
+		if(!getparint("precon_z1",&precon_z1))					err("precon_z1 is not set!");
+		if(!getparint("precon_z2",&precon_z2))					err("precon_z2 is not set!");
+
+}

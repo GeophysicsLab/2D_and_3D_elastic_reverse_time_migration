@@ -1,0 +1,4 @@
+vs has not been joined,thus they can be obtained by empirical formula
+den has not been joined,thus they can be obtained by empirical formula
+nnx=378,nny=378,nnz=241
+,gpu_memory_size of one wavefield=131.359268

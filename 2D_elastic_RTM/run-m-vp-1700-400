@@ -1,0 +1,61 @@
+#! /bin/sh
+#ceshi
+mkdir check_file
+mkdir ./check_file/velocity/
+mkdir ./check_file/stress/  
+mkdir ./check_file/memory/
+
+mkdir someoutput
+mkdir ./someoutput/bin
+mkdir result
+mkdir ./result/RTM
+mkdir ./result/gradient
+mkdir ./result/save_program
+cp -r *.cu\
+							makefile zzzzz run-m-1700-400 ./result/save_program
+mv log.txt log_old.txt
+
+rm 1_gpu
+rm 1.o
+make
+	./1_gpu  cuda_code=5  velocity=/u10/TZE/xxl/zhangwei/2D_velocity/m-vp-1700-400    velocity1=/u10/TZE/xxl/zhangwei/2D_velocity/m-vs-1700-400    density=/u10/TZE/xxl/zhangwei/2D_velocity/m-den-1700-400\
+				s_velocity=/u10/TZE/xxl/zhangwei/2D_velocity/m-vp-1700-400  s_velocity1=/u10/TZE/xxl/zhangwei/2D_velocity/m-vs-1700-400  s_density=/u10/TZE/xxl/zhangwei/2D_velocity/m-den-1700-400\
+			join_vs=1 join_den=1 join_shot=0 join_wavefield=0\
+			inversion_para=3 inversion_den=0  inversion_vs=0\
+			laplace=1 laplace_compensate=0 precon=1 precon_z1=30 precon_z2=40 offset_attenuation=15 rbell=20\
+			nx=1700 nz=400 dx=10 dz=10 lt=5000 dt=1 freq=12.5\
+\
+			iter_start=0 niter=1 RTM_only=1\
+\
+			shot_num=1 shot_start=0 shot_interval=5\
+			shot_depth=0 shot_z_interval=0\
+\
+			receiver_num=400 receiver_start=0 receiver_interval=1 receiver_offset=200 receiver_mark=0\
+			receiver_depth=0 receiver_z_interval=0\
+			vsp=0\
+\
+			vsp_2=0\
+			receiver_start_2=200 receiver_interval_2=0 receiver_depth_2=0 receiver_z_interval_2=1 receiver_num_2=600\
+\
+			vsp_precon=0\
+\
+			decomposition=0\
+			smooth_time_vp=5 smooth_time_vs=5 smooth_time_density=5 velocity_multiple=1.0\
+			boundary_up=50 boundary_down=50 boundary_left=50 boundary_right=50 coe_attenuation=200\
+			outfile_name=./result-300-200\
+\
+			qp_model=./velocity/m-1700-400  qs_model=./velocity/m-1700-400 smooth_time_qp=5 smooth_time_qs=5 \
+			s_qp_model=./velocity/m-1700-400  s_qs_model=./velocity/m-1700-400\
+			modeling_type=0 migration_type=0 variable_number=13\
+			accumulation=0 cut_direct_wave=350\
+			correlation_misfit=0\
+			amplitude_error=0 amplitude_error_number=0 shot_scale=0
+			mv log.txt log_1.txt
+###iter_startrestart
+###inversion_para==0||1  	denote: inversion parameter is lame coefficient
+###inversion_para==2  	denote: inversion parameter is vp vs density	(velocity)
+###inversion_para==3  	denote: inversion parameter is Ip Is density	(impedance)
+###join_shot=0:must simulate obs_shot_x and obs_shot_z  (seismic recordings)
+###join_shot=1:alredy has    obs_shot_x and obs_shot_z  (seismic recordings)
+###precon=0:no precondition;precon==1:source illumination;precon=2:come from Multi-paramerter FWI; note:in 1.cu, modify:precon_z1-precon_z2 in precondition
+###join_vs=0 join_den=0:

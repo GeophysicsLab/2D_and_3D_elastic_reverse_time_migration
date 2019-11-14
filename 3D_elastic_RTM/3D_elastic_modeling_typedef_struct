@@ -1,0 +1,293 @@
+typedef struct
+{
+		float *vx1_d,*vy1_d,*vz1_d;
+		float *vx2_d,*vy2_d,*vz2_d;////6
+
+
+		float *txx1_d,*tyy1_d,*tzz1_d;
+		float *txx2_d,*tyy2_d,*tzz2_d;///6
+
+
+		float *txy1_d,*txz1_d,*tyz1_d;
+		float *txy2_d,*txz2_d,*tyz2_d;///6
+
+
+		float *tp1_d,*vxp1_d,*vyp1_d,*vzp1_d,*vxs1_d,*vys1_d,*vzs1_d;
+		float *tp2_d,*vxp2_d,*vyp2_d,*vzp2_d,*vxs2_d,*vys2_d,*vzs2_d;///14
+
+
+
+		float *velocity_d,*velocity1_d,*density_d;
+		float *s_velocity_d,*s_velocity1_d,*s_density_d;///6
+
+
+		float *velocity_h,*velocity1_h,*density_h;		
+		float *s_velocity_h,*s_velocity1_h,*s_density_h;
+
+
+
+		float *obs_shot_x_d,*obs_shot_y_d,*obs_shot_z_d;
+		float *obs_shot_x_h,*obs_shot_y_h,*obs_shot_z_h;
+
+		float *coe_d;
+		float *wavelet_d;
+		float *att_h,*att_d;////////////4
+
+
+		float *rep;
+
+		float *wf_h,*wf0_h,*wf1_h,*wf2_h,*wf3_h,*wf4_h;
+		
+	
+		cudaStream_t stream;
+
+/////////////////////////////////////////////for RTM:
+		float *ex_time_d,*ex_amp_d,*ex_tp_d,*ex_vxp_d,*ex_vyp_d,*ex_vzp_d;
+
+		float *vresult_tp_d,*vresult_pp_d,*vresult_ps_d;
+
+//////////////////////////to calculate angle for compensate cos(2a) or cos(a+b) or extract angle domain common imaging gathers in 2D and 3D
+		float *poyn_px_d,*poyn_py_d,*poyn_pz_d;
+		float *poyn_rpx_d,*poyn_rpy_d,*poyn_rpz_d;
+		float *poyn_rsx_d,*poyn_rsy_d,*poyn_rsz_d;
+		float *angle_pp_d,*angle_ps_d;
+
+} GPUdevice;
+
+void allocate_typedef_struct(GPUdevice *mgdevice,int i)
+{
+//////////////////////////开辟正传的波场变量。
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vx1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vy1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vz1_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vx2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vy2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vz2_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].txx1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tyy1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tzz1_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].txx2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tyy2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tzz2_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].txy1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].txz1_d,nnx*nny*nnz_device_append*sizeof(float)));		
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tyz1_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].txy2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].txz2_d,nnx*nny*nnz_device_append*sizeof(float)));		
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tyz2_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+	
+	
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tp1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vxp1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vyp1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vzp1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vxs1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vys1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vzs1_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].tp2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vxp2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vyp2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vzp2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vxs2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vys2_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vzs2_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].velocity_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].velocity1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].density_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].s_velocity_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].s_velocity1_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].s_density_d,nnx*nny*nnz_device_append*sizeof(float)));
+		
+		cudaMemsetAsync(mgdevice[i].velocity_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].velocity1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].density_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].s_velocity_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].s_velocity1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].s_density_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+	
+
+
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].velocity_h,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].velocity1_h,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].density_h,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].s_velocity_h,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].s_velocity1_h,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].s_density_h,nnx*nny*nnz_device_append*sizeof(float)));
+
+		cudaMemsetAsync(mgdevice[i].velocity_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].velocity1_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].density_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].s_velocity_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].s_velocity1_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].s_density_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].obs_shot_x_d,receiver_num_x*receiver_num_y*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].obs_shot_y_d,receiver_num_x*receiver_num_y*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].obs_shot_z_d,receiver_num_x*receiver_num_y*sizeof(float)));
+		cudaMemsetAsync(mgdevice[i].obs_shot_x_d,0,receiver_num_x*receiver_num_y*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].obs_shot_y_d,0,receiver_num_x*receiver_num_y*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].obs_shot_z_d,0,receiver_num_x*receiver_num_y*sizeof(float),mgdevice[i].stream);
+
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].obs_shot_x_h,receiver_num_x*receiver_num_y*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].obs_shot_y_h,receiver_num_x*receiver_num_y*sizeof(float)));
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].obs_shot_z_h,receiver_num_x*receiver_num_y*sizeof(float)));
+		cudaMemsetAsync(mgdevice[i].obs_shot_x_h,0,receiver_num_x*receiver_num_y*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].obs_shot_y_h,0,receiver_num_x*receiver_num_y*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].obs_shot_z_h,0,receiver_num_x*receiver_num_y*sizeof(float),mgdevice[i].stream);
+
+
+		
+		checkCudaErrors(cudaMalloc(&mgdevice[i].coe_d,(radius+1)*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].wavelet_d,wavelet_length*sizeof(float)));/////给每一块卡，分配炮记录，差分系数，子波的空间
+		cudaMemsetAsync(mgdevice[i].coe_d,0,(radius+1)*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].wavelet_d,0,wavelet_length*sizeof(float),mgdevice[i].stream);
+
+
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].att_h,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].att_d,nnx*nny*nnz_device_append*sizeof(float)));
+		
+		cudaMemsetAsync(&mgdevice[i].att_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(&mgdevice[i].att_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].wf_h,nnx*nny*nnz_device_append*sizeof(float)));
+		cudaMemsetAsync(&mgdevice[i].wf_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].wf0_h,nnx*nny*nnz_device_append*sizeof(float)));
+		cudaMemsetAsync(&mgdevice[i].wf0_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].wf1_h,nnx*nny*nnz_device_append*sizeof(float)));
+		cudaMemsetAsync(&mgdevice[i].wf1_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].wf2_h,nnx*nny*nnz_device_append*sizeof(float)));
+		cudaMemsetAsync(&mgdevice[i].wf2_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].wf3_h,nnx*nny*nnz_device_append*sizeof(float)));
+		cudaMemsetAsync(&mgdevice[i].wf3_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		checkCudaErrors(cudaMallocHost(&mgdevice[i].wf4_h,nnx*nny*nnz_device_append*sizeof(float)));
+		cudaMemsetAsync(&mgdevice[i].wf4_h,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+/////////////////////////////////////////////for RTM: float *ex_time_d,*ex_tp_d,*ex_vxp_d,*ex_vy_d,*ex_vzp_d;
+		checkCudaErrors(cudaMalloc(&mgdevice[i].ex_time_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].ex_amp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].ex_tp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].ex_vxp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].ex_vyp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].ex_vzp_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vresult_tp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vresult_pp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].vresult_ps_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+//////////////////////////to calculate angle for compensate cos(2a) or cos(a+b) or extract angle domain common imaging gathers in 2D and 3D
+		/*checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_px_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_py_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_pz_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_rpx_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_rpy_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_rpz_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_rsx_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_rsy_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].poyn_rsz_d,nnx*nny*nnz_device_append*sizeof(float)));
+
+		checkCudaErrors(cudaMalloc(&mgdevice[i].angle_pp_d,nnx*nny*nnz_device_append*sizeof(float)));
+		checkCudaErrors(cudaMalloc(&mgdevice[i].angle_ps_d,nnx*nny*nnz_device_append*sizeof(float)));*/
+		
+}
+
+void set_zero_typedef_struct_wavefield(GPUdevice *mgdevice,int i)
+{
+//////////////////////////set zero for wavefield
+		cudaMemsetAsync(mgdevice[i].vx1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vy1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vz1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].vx2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vy2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vz2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+
+
+		cudaMemsetAsync(mgdevice[i].txx1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].tyy1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].tzz1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].txx2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].tyy2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].tzz2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+	
+
+		cudaMemsetAsync(mgdevice[i].txy1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].txz1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].tyz1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].txy2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].txz2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].tyz2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+
+
+		cudaMemsetAsync(mgdevice[i].tp1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vxp1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vyp1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vzp1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vxs1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vys1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vzs1_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].tp2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vxp2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vyp2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vzp2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vxs2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vys2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vzs2_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+}
+void set_zero_typedef_struct_excitation(GPUdevice *mgdevice,int i)
+{
+/////////////////////////////////////////////for RTM: float *ex_time_d,*ex_tp_d,*ex_vxp_d,*ex_vy_d,*ex_vzp_d;
+		cudaMemsetAsync(mgdevice[i].ex_time_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].ex_amp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].ex_tp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].ex_vxp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].ex_vyp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].ex_vzp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].vresult_tp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vresult_pp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].vresult_ps_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+}
+
+void set_zero_typedef_struct_poyn(GPUdevice *mgdevice,int i)
+{
+//////////////////////////to calculate angle for compensate cos(2a) or cos(a+b) or extract angle domain common imaging gathers in 2D and 3D
+		cudaMemsetAsync(mgdevice[i].poyn_px_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].poyn_py_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].poyn_pz_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].poyn_rpx_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].poyn_rpy_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].poyn_rpz_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].poyn_rsx_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].poyn_rsy_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].poyn_rsz_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+
+		cudaMemsetAsync(mgdevice[i].angle_pp_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+		cudaMemsetAsync(mgdevice[i].angle_ps_d,0,nnx*nny*nnz_device_append*sizeof(float),mgdevice[i].stream);
+}

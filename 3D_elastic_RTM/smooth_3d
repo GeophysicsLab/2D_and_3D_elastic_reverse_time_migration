@@ -1,0 +1,2 @@
+#!/bin/sh
+smooth3d< ./someoutput/den_all.bin n1=251 n2=388 n3=388 r1=30.000000 r2=30.000000 r3=30.000000 >./someoutput/s_den.bin 

@@ -1,0 +1,1438 @@
+void set_zero_1d(float *matrix,int nx)
+{
+	int ix;
+	for(ix=0;ix<nx;ix++)
+		matrix[ix]=0.0;
+}
+
+void set_zero_2d(float **matrix,int nx,int nz)
+{
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			matrix[iz][ix]=0.0;
+}
+
+void set_zero_3d(float ***matrix,int nx,int ny,int nz)
+{
+	int ix,iy,iz;
+	
+	for(ix=0;ix<nx;ix++)
+		for(iy=0;iy<ny;iy++)
+			for(iz=0;iz<nz;iz++)
+				matrix[iz][iy][ix]=0.0;
+}
+
+void set_zero_1d_complex(complex *matrix,int nx)
+{
+	int ix;
+	for(ix=0;ix<nx;ix++)
+		{
+			matrix[ix].r=0.0;
+			matrix[ix].i=0.0;
+		}
+}
+
+void set_zero_2d_complex(complex **matrix,int nx,int nz)
+{
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			{
+				matrix[iz][ix].r=0.0;
+				matrix[iz][ix].i=0.0;
+			}
+}
+
+void set_zero_3d_complex(complex ***matrix,int nx,int ny,int nz)
+{
+	int ix,iy,iz;
+	
+	for(ix=0;ix<nx;ix++)
+		for(iy=0;iy<ny;iy++)
+			for(iz=0;iz<nz;iz++)
+				{
+					matrix[iz][iy][ix].r=0.0;
+					matrix[iz][iy][ix].i=0.0;
+				}
+}
+void write_file_1d(float *matrix,int nx,char *name)
+{
+	FILE *fp;
+	fp=fopen(name,"wb+");
+		fwrite(matrix,sizeof(float),nx,fp);
+		fclose(fp);
+}
+
+void write_file_2d(float **matrix,int nx,int nz,char *name)
+{
+	int ix,iz;
+
+	FILE *fp;
+	fp=fopen(name,"wb+");
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+	fwrite(&matrix[iz][ix],sizeof(float),1,fp);
+	fclose(fp);
+}
+
+void write_file_3d(float ***matrix,int nx,int ny,int nz,char *name)
+{
+	int ix,iy,iz;
+
+	FILE *fp;
+	fp=fopen(name,"wb+");
+	for(ix=0;ix<nx;ix++)
+		for(iy=0;iy<ny;iy++)
+			for(iz=0;iz<nz;iz++)
+			fwrite(&matrix[iz][iy][ix],sizeof(float),1,fp);
+			fclose(fp);
+}
+
+void fread_file_1d(float *matrix,int nx,int nz,char *name)
+{
+	int ix,iz;
+	FILE *fp;
+	fp=fopen(name,"rb");
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			fread(&matrix[ix*nz+iz],sizeof(float),1,fp);
+		fclose(fp);
+}
+
+void fread_file_2d(float **matrix,int nx,int nz,char *name)
+{
+	int ix,iz;
+
+	FILE *fp;
+	fp=fopen(name,"rb");
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			fread(&matrix[iz][ix],sizeof(float),1,fp);
+				fclose(fp);
+}
+
+void fread_file_3d(float ***matrix,int nx,int ny,int nz,char *name)
+{
+	int ix,iy,iz;
+	FILE *fp;
+
+	if((fp=fopen(name,"rb"))==NULL)
+	{	
+		printf("Can not oen this file : %s\n",name);
+		exit(0);
+	}
+	
+	
+	fp=fopen(name,"rb");
+	for(ix=0;ix<nx;ix++)
+		for(iy=0;iy<ny;iy++)
+			for(iz=0;iz<nz;iz++)
+				fread(&matrix[iz][iy][ix],sizeof(float),1,fp);
+					fclose(fp);
+}
+
+
+
+
+/////zzzzz:get ricker wave by two methods
+float * make_ricker_new(float freq,float dt,int *Npoint)
+{
+	float Bpar,t,u,*ricker;
+	int Np1,N;
+	
+	if(freq==0.0) freq=30.0;
+	if(dt==0.0) dt=0.004;
+	Bpar=sqrt(6.0)/(PI*freq);
+	N=(int)(ceil(1.35*Bpar/dt));
+	Np1=N;
+	*Npoint=2*N+1;
+	 
+	ricker=alloc1float(*Npoint);
+	ricker[Np1]=1.0;
+	for(int i=1;i<=N;i++)
+	{
+		t=dt*(float)i;
+		u=2.0*sqrt(6.0)*t/Bpar;
+		ricker[Np1+i]=ricker[Np1-i]=0.5*(2.0-u*u)*exp(-u*u/4.0);
+	}
+	return ricker;
+}
+
+void make_ricker_initial(float *ricker,float frmain,float dt,int wave_length)
+{
+	float sdt,time,tp1,tp2;
+	int it;
+	sdt=dt*0.001;
+	for(it=0;it<wave_length;it++)
+        {
+		time=(it+1)*sdt-(wave_length/2.0)*sdt;
+		tp1=PI*frmain*time;
+		tp2=tp1*tp1;
+		ricker[it]=(1.0-2.0*tp2)*exp(-tp2);
+        }
+}
+
+void make_ricker_better(float *ricker,float frmain,float dt,int wave_length)
+{
+	float sdt,time,tp1,tp2;
+	int it;
+	sdt=dt*0.001;
+	for(it=0;it<wave_length;it++)
+        {
+		time=((it+1)*sdt-1.0/frmain)*sdt;
+		tp1=PI*frmain*time;
+		tp2=tp1*tp1;
+		ricker[it]=(1.0-2.0*tp2)*exp(-tp2);
+        }
+}
+/*__global__ void cuda_ricker_wavelet(float *wlt, float amp, float fm, float dt, int nt)
+{
+	int it=threadIdx.x+blockDim.x*blockIdx.x;
+    	if (it<nt)
+	{
+	    	float tmp = PI*fm*(it*dt-1.0/fm);
+	    	tmp *=tmp;
+		wlt[it]=amp*(1.0-2.0*tmp)*expf(-tmp);
+	}
+}*/
+
+
+/////zzzzz:get one or two order difference coefficient
+void make_coe_optimized_new(float *coe)
+{
+		//*****optimized*********
+		coe[1]=1.2213363647;
+	      coe[2]=-0.096931457519;
+		coe[3]=0.017447662353;
+            coe[4]=-0.0029672895159;
+            coe[5]=0.00035900539822;
+		coe[6]=-0.00002184781161;////first-order derivative
+
+		/*coe[1]=1.2112426;
+     		coe[2]=-0.0897216;
+      	coe[3]=0.0138427;
+     		coe[4]=-0.0017656;
+      	coe[5]=0.0001186;
+		coe[6]=0.0;*/
+		//*****optimized end***********/
+}
+
+void make_coe_optimized1_new(float *coe)
+{
+		//*****optimized*********
+		coe[0]= 0.0000;
+		coe[1]=+0.83333;
+		coe[2]=-0.23810;
+		coe[3]=+0.059524;
+		coe[4]=-0.0099206;
+		coe[5]=+0.0008038;///// second-order derivative
+		coe[6]= 0.0000;
+		//*****optimized end***********/
+}
+
+
+
+
+/////zzzzz:make_attenuation_new , read velocity_new , <<< get_current_shot_velocity_new  and  extend velocity >>>
+void make_attenuation_new(float *attenuation,int nx,int nz,int boundary_up,int boundary_down,int boundary_left,int boundary_right,float coe_attenuation)
+{
+	float *att_up,*att_down,*att_left,*att_right;
+	if(boundary_up!=0) 
+		{	
+			att_up=alloc1float(boundary_up);
+			memset((void *) (att_up), 0, boundary_up* sizeof (float));
+		}
+	att_down=alloc1float(boundary_down);
+	att_left=alloc1float(boundary_left);
+	att_right=alloc1float(boundary_right);
+	memset((void *) (att_down), 0, boundary_down* sizeof (float));
+	memset((void *) (att_left), 0, boundary_left* sizeof (float));
+	memset((void *) (att_right), 0, boundary_right* sizeof (float));
+	
+	float xxx;
+		
+	if(boundary_up!=0)
+	{
+			for(int iz=0;iz<boundary_up;iz++)
+			{
+					xxx=(boundary_up-1.0-iz)/(boundary_up-1.0);
+					att_up[iz]=coe_attenuation*pow(xxx*1.0,3.0);
+					//att_up[iz]=coe_attenuation*(1.0-cos(PI/2*(boundary_up-iz-1)/(boundary_up-1)));//cos
+					//att_up[iz]=coe_attenuation*((boundary_up-1.0-iz)*(boundary_up-1.0-iz)*(boundary_up-1.0-iz)/((boundary_up-1.0)*(boundary_up-1.0)*(boundary_up-1.0)));//NPML
+			}
+	}
+
+			for(int iz=0;iz<boundary_down;iz++)
+			{
+					xxx=iz/(boundary_down-1.0);
+					att_down[iz]=coe_attenuation*pow(xxx*1.0,3.0);
+					//att_down[iz]=coe_attenuation*(1.0-cos(PI/2*iz/(boundary_down-1)));//cos
+					//att_down[iz]=coe_attenuation*(iz*iz*iz*1.0/((boundary_up-1.0)*(boundary_up-1.0)*(boundary_up-1.0)));//NPML
+			}
+
+			for(int ix=0;ix<boundary_left;ix++)
+			{
+					xxx=(boundary_left-1.0-ix)/(boundary_left-1.0);
+					att_left[ix]=coe_attenuation*pow(xxx*1.0,3.0);
+
+					//att_left[ix]=coe_attenuation*(1.0-cos(PI/2*(boundary_left-ix-1)/(boundary_left-1)));//cos
+					//att_left[ix]=coe_attenuation*((boundary_left-1.0-ix)*(boundary_left-1.0-ix)*(boundary_left-1.0-ix)/((boundary_left-1.0)*(boundary_left-1.0)*(boundary_left-1.0)));//NPML
+			}
+
+			for(int ix=0;ix<boundary_right;ix++)
+			{
+					xxx=ix/(boundary_right-1.0);
+					att_right[ix]=coe_attenuation*pow(xxx*1.0,3.0);
+					//att_right[ix]=coe_attenuation*(1.0-cos(PI/2*ix/(boundary_right-1)));//cos
+					//att_right[ix]=coe_attenuation*(ix*ix*ix*1.0/((boundary_right-1.0)*(boundary_right-1.0)*(boundary_right-1.0)));//NPML					
+			}
+
+	int nx_append=boundary_left+nx+boundary_right;
+	int nz_append=boundary_up+nz+boundary_down;
+//u
+	if(boundary_up!=0)
+	{
+		for(int iz=0;iz<boundary_up;iz++)
+			for(int ix=0;ix<nx_append;ix++)
+			{
+					attenuation[ix*nz_append+iz]=att_up[iz];
+			}
+	}
+//l
+		for(int iz=0;iz<nz_append;iz++)
+			for(int ix=0;ix<boundary_left;ix++)
+			{
+					attenuation[ix*nz_append+iz]+=att_left[ix];
+			}
+//d
+		for(int iz=boundary_up+nz;iz<nz_append;iz++)
+			for(int ix=0;ix<nx_append;ix++)
+			{
+					attenuation[ix*nz_append+iz]+=att_down[iz-(boundary_up+nz)];
+			}
+//r
+		for(int iz=0;iz<nz_append;iz++)
+			for(int ix=boundary_left+nx;ix<boundary_left+nx+boundary_right;ix++)
+			{
+					attenuation[ix*nz_append+iz]+=att_right[ix-(boundary_left+nx)];
+			}
+
+	if(boundary_up!=0) free1float(att_up);
+	free1float(att_down);
+	free1float(att_left);
+	free1float(att_right);
+}
+
+void read_velocity_new(float *velocity,int nx,int nz,int boundary_up,int boundary_down,int boundary_left,int boundary_right,char *filename)
+////read  all velocity mode 
+{
+	FILE *velocity_fp;
+	
+	velocity_fp=fopen(filename,"rb");
+
+	int nx_append=boundary_left+nx+boundary_right;
+	int nz_append=boundary_up+nz+boundary_down;
+	for(int ix=0;ix<nx_append;ix++)
+	{
+			if(ix<boundary_left)
+					fseek(velocity_fp,0,0);
+			else if(ix<boundary_left+nx)
+					fseek(velocity_fp,(ix-boundary_left)*sizeof(float)*nz,0);
+			else
+					fseek(velocity_fp,(nx-1)*sizeof(float)*nz,0);
+			fread((velocity+ix*nz_append+boundary_up),sizeof(float),nz,velocity_fp);
+
+			for(int iz=0;iz<boundary_up;iz++)
+			{
+					velocity[ix*nz_append+iz]=velocity[ix*nz_append+boundary_up];
+			}
+			for(int iz=boundary_up+nz;iz<nz_append;iz++)
+			{
+					velocity[ix*nz_append+iz]=velocity[ix*nz_append+boundary_up+nz-1];
+			}
+	}
+	
+	fclose(velocity_fp);
+}
+
+void get_partly_mode(float *velocity_all,float *velocity_current,int nx,int nz,int receiver_x_cord,int receiver_interval,int receiver_num)
+{
+	int ix,iz;
+	
+	int nnx;
+	nnx=receiver_interval*receiver_num;
+	
+	for(ix=0;ix<nnx;ix++)
+		for(iz=0;iz<nz;iz++)
+	  		velocity_current[ix*nz+iz]=velocity_all[(receiver_x_cord+ix)*nz+iz];	
+}
+
+void get_current_shot_velocity_new(float *velocity_current,int nx,int nz,int receiver_x_cord,int receiver_interval,int receiver_num,char *filename)
+////read some part velocity mode 
+{
+	int ix,iz;
+	float *velocity_all;
+	velocity_all=alloc1float(nx*nz);
+	set_zero_1d(velocity_all,nx*nz);
+	fread_file_1d(velocity_all,nx,nz,filename);
+	//write_file_1d(velocity_all,nx*nz,"vel");
+	
+	int nnx;
+	nnx=receiver_interval*receiver_num;
+	
+	for(ix=0;ix<nnx;ix++)
+		for(iz=0;iz<nz;iz++)
+	  		velocity_current[ix*nz+iz]=velocity_all[(receiver_x_cord+ix)*nz+iz];	
+}
+
+void extend_velocity_new(float *velocity_input_1d,float *velocity_output_1d,int nx_append,int nz_append,int nx,int nz,int boundary_left,int boundary_up,int boundary_right,int boundary_down)
+////extend_velocity  nx=nx+apert nz=nz+apert
+{
+//the input is the size: nx * nz                              	
+//the output is the size: nx_append * nz_append				
+	int ix,iz;
+	int du,dl,dr,dd;
+	du=boundary_up;
+	dd=boundary_down;
+	dl=boundary_left;
+	dr=boundary_right;
+	
+	/*int nx_append,nz_append;
+	nx_append=nx+dl+dr;
+	nz_append=nz+du+dd;*/
+	
+	float **velocity_output,**velocity_input;
+	velocity_output=alloc2float(nx_append,nz_append);
+	velocity_input=alloc2float(nx,nz);
+	set_zero_2d(velocity_output,nx_append,nz_append);
+	set_zero_2d(velocity_output,nx,nz);
+	
+//set value for input_1d
+	for(ix=0;ix<nx;ix++)
+	for(iz=0;iz<nz;iz++)
+		{		
+			velocity_input[iz][ix]=velocity_input_1d[ix*nz+iz];
+		}
+		
+//up
+	for(iz=0;iz<du;iz++)
+	for(ix=0;ix<nx;ix++)
+		{		
+			velocity_output[iz][ix+dl]=velocity_input[0][ix];
+		}
+//down
+	for(iz=0;iz<dd;iz++)
+	for(ix=0;ix<nx;ix++)
+		{		
+			velocity_output[iz+du+nz][ix+dl]=velocity_input[nz-1][ix];
+		}
+//left
+	for(iz=0;iz<nz;iz++)
+	for(ix=0;ix<dl;ix++)
+		{	
+			velocity_output[iz+du][ix]=velocity_input[iz][0];
+		}
+//rigt
+	for(iz=0;iz<nz;iz++)
+	for(ix=0;ix<dr;ix++)
+		{	
+			velocity_output[iz+du][ix+dl+nx]=velocity_input[iz][nx-1];
+		}
+//four corner
+
+//ul
+	for(iz=0;iz<du;iz++)			
+	for(ix=0;ix<dl;ix++)
+		{
+			velocity_output[iz][ix]=velocity_input[0][0];
+		}
+
+//ur
+	for(iz=0;iz<du;iz++)			
+	for(ix=dl+nx-1;ix<dl+nx+dr;ix++)
+		{
+			velocity_output[iz][ix]=velocity_input[0][nx-1];
+		}
+
+//dl
+	for(iz=nz+du-1;iz<du+nz+dd;iz++)			
+	for(ix=0;ix<dl;ix++)
+		{
+			velocity_output[iz][ix]=velocity_input[nz-1][0];
+		}
+
+//dr
+	for(iz=du+nz-1;iz<du+nz+dd;iz++)			
+	for(ix=dl+nx-1;ix<dl+nx+dr;ix++)
+		{
+			velocity_output[iz][ix]=velocity_input[nz-1][nx-1];
+		}
+//med
+	for(iz=du;iz<du+nz;iz++)
+	for(ix=dl;ix<dl+nx;ix++)
+		{
+			velocity_output[iz][ix]=velocity_input[iz-du][ix-dl];
+		}
+		
+//set vaule for ouput 1d
+	
+	for(ix=0;ix<nx_append;ix++)
+	for(iz=0;iz<nz_append;iz++)
+		{
+			velocity_output_1d[ix*nz_append+iz]=velocity_output[iz][ix];
+		}		
+
+}
+/////		extend_boundary_new:::   the destionation is extended boundary value to added boundary
+void extend_boundary_new(float *input,int nx_append,int nz_append,int nx,int nz,int boundary_left,int boundary_up,int boundary_right,int boundary_down)
+{
+	int ix,iz;
+	int du,dl,dr,dd;
+	du=boundary_up;
+	dd=boundary_down;
+	dl=boundary_left;
+	dr=boundary_right;
+	
+	float **v2,**v2pml;
+	v2=alloc2float(nx,nz);
+	v2pml=alloc2float(nx_append,nz_append);
+	
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			v2[iz][ix]=input[(ix+boundary_left)*nz_append+iz+boundary_up];	
+//up
+	for(iz=0;iz<du;iz++)
+	for(ix=0;ix<nx;ix++)
+		{
+			
+			v2pml[iz][ix+dl]=v2[0][ix];
+		}
+//down
+	for(iz=0;iz<dd;iz++)
+	for(ix=0;ix<nx;ix++)
+		{
+			
+			v2pml[iz+du+nz][ix+dl]=v2[nz-1][ix];
+		}
+//left
+	for(iz=0;iz<nz;iz++)
+	for(ix=0;ix<dl;ix++)
+		{
+			
+			v2pml[iz+du][ix]=v2[iz][0];
+		}
+//rigt
+	for(iz=0;iz<nz;iz++)
+	for(ix=0;ix<dr;ix++)
+		{
+			
+			v2pml[iz+du][ix+dl+nx]=v2[iz][nx-1];
+		}
+//four corner
+
+//ul
+	for(iz=0;iz<du;iz++)			
+	for(ix=0;ix<dl;ix++)
+		{
+			v2pml[iz][ix]=v2[0][0];
+		}
+
+//ur
+	for(iz=0;iz<du;iz++)			
+	for(ix=dl+nx-1;ix<dl+nx+dr;ix++)
+		{
+			v2pml[iz][ix]=v2[0][nx-1];
+		}
+
+//dl
+	for(iz=nz+du-1;iz<du+nz+dd;iz++)			
+	for(ix=0;ix<dl;ix++)
+		{
+			v2pml[iz][ix]=v2[nz-1][0];
+		}
+
+//dr
+	for(iz=du+nz-1;iz<du+nz+dd;iz++)			
+	for(ix=dl+nx-1;ix<dl+nx+dr;ix++)
+		{
+			v2pml[iz][ix]=v2[nz-1][nx-1];
+		}
+//med
+	for(iz=du;iz<du+nz;iz++)
+	for(ix=dl;ix<dl+nx;ix++)
+		{
+			v2pml[iz][ix]=v2[iz-du][ix-dl];
+		}
+	
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+			input[ix*nz_append+iz]=v2pml[iz][ix];
+			
+	free2float(v2);
+	free2float(v2pml);
+}
+
+void read_resultpp_new(float *resultpp,int nx,int nz,int boundary_up,int boundary_down,int boundary_left,int boundary_right,char *filename)
+{
+	
+	int ix,iz,nx_append,nz_append;
+	nx_append=nx+boundary_left+boundary_right;
+	nz_append=nz+boundary_up+boundary_down;
+	
+	float **v2;
+	v2=alloc2float(nx,nz);
+	set_zero_2d(v2,nx,nz);
+	
+	FILE *fp;
+	fp=fopen(filename,"rb");
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			fread(&v2[iz][ix],4,1,fp);
+		fclose(fp);
+		
+	float **v2pml;
+	v2pml=alloc2float(nx_append,nz_append);
+	set_zero_2d(v2pml,nx_append,nz_append);
+	
+	int du,dl,dr,dd;
+	du=boundary_up;
+	dd=boundary_down;
+	dl=boundary_left;
+	dr=boundary_right;
+		
+//up	
+	for(ix=0;ix<nx;ix++)
+	for(iz=0;iz<du;iz++)
+		{
+			
+			v2pml[iz][ix+dl]=v2[0][ix];
+		}
+//down	
+	for(ix=0;ix<nx;ix++)
+	for(iz=0;iz<dd;iz++)
+		{
+			
+			v2pml[iz+du+nz][ix+dl]=v2[nz-1][ix];
+		}
+//left	
+	for(ix=0;ix<dl;ix++)
+		for(iz=0;iz<nz;iz++)
+		{
+			
+			v2pml[iz+du][ix]=v2[iz][0];
+		}
+//rigt
+	for(ix=0;ix<dr;ix++)
+	for(iz=0;iz<nz;iz++)
+	
+		{			
+			v2pml[iz+du][ix+dl+nx]=v2[iz][nx-1];
+		}
+//four corner
+
+//ul
+	for(iz=0;iz<du;iz++)			
+	for(ix=0;ix<dl;ix++)
+		{
+			v2pml[iz][ix]=v2[0][0];
+		}
+
+//ur
+	for(iz=0;iz<du;iz++)			
+	for(ix=dl+nx-1;ix<dl+nx+dr;ix++)
+		{
+			v2pml[iz][ix]=v2[0][nx-1];
+		}
+
+//dl
+	for(iz=nz+du-1;iz<du+nz+dd;iz++)			
+	for(ix=0;ix<dl;ix++)
+		{
+			v2pml[iz][ix]=v2[nz-1][0];
+		}
+
+//dr
+	for(iz=du+nz-1;iz<du+nz+dd;iz++)			
+	for(ix=dl+nx-1;ix<dl+nx+dr;ix++)
+		{
+			v2pml[iz][ix]=v2[nz-1][nx-1];
+		}
+//med
+	for(iz=du;iz<du+nz;iz++)
+	for(ix=dl;ix<dl+nx;ix++)
+		{
+			v2pml[iz][ix]=v2[iz-du][ix-dl];
+		}
+	
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+			resultpp[ix*nz_append+iz]=v2pml[iz][ix];
+	
+	free2float(v2);
+	free2float(v2pml);	
+}
+
+
+
+
+///multiple time smooth velocity // multiple time smooth imagingdown
+void cpu_smooth_velocity(float *velocity,int nx_append,int nz_append,int times)
+{
+	int ix,iz,i;
+	float *matrix,*wf_append;
+	matrix=alloc1float(nx_append*nz_append);
+	wf_append=alloc1float(nx_append*nz_append);	
+	memset((void *) (matrix), 0, nx_append*nz_append * sizeof (float));
+	memset((void *) (wf_append), 0, nx_append*nz_append * sizeof (float));
+		
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+			wf_append[ix*nz_append+iz]=velocity[ix*nz_append+iz];
+		
+		
+	for(i=0;i<times;i++)
+	{
+//exchange
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+				wf_append[ix*nz_append+iz]=velocity[ix*nz_append+iz];
+//smooth
+		for(ix=1;ix<nx_append-1;ix++)
+			for(iz=1;iz<nz_append-1;iz++)
+				matrix[ix*nz_append+iz]=(wf_append[ix*nz_append+iz]+wf_append[(ix+1)*nz_append+iz]+wf_append[(ix-1)*nz_append+iz]+wf_append[ix*nz_append+iz+1]+wf_append[ix*nz_append+iz-1])*1.0/5;
+		for(ix=1;ix<nx_append-1;ix++)
+			for(iz=1;iz<nz_append-1;iz++)
+				wf_append[ix*nz_append+iz]=matrix[ix*nz_append+iz];
+//exchange
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+				velocity[ix*nz_append+iz]=wf_append[ix*nz_append+iz];
+	}
+
+		free1float(matrix);
+		free1float(wf_append);
+}
+
+void smooth_imagingdown(float *wf,int nx,int nz,int smooth_denominator_time)
+{
+		int ix,iz,itime;
+		float *wf1,*wf2;
+		wf1=alloc1float(nx*nz);
+		wf2=alloc1float(nx*nz);
+		memset((void *) (wf1), 0, nx*nz * sizeof (float));
+		memset((void *) (wf2), 0, nx*nz * sizeof (float));
+//exchange
+		for(int ix=0;ix<nx;ix++)
+			for(int iz=0;iz<nz;iz++)
+				{
+					wf1[ix*nz+iz]=wf[ix*nz+iz];
+					wf2[ix*nz+iz]=wf[ix*nz+iz];
+				}
+//smooth	imagingdown
+
+		for(itime=0;itime<smooth_denominator_time;itime++)
+			{
+				for(ix=2;ix<nx-2;ix++)
+					for(iz=2;iz<nz-2;iz++)
+						{
+							wf1[ix*nz+iz]=(wf2[ix*nz+iz]+wf2[(ix+1)*nz+iz]+wf2[(ix+2)*nz+iz]+wf2[(ix-2)*nz+iz]+wf2[(ix-1)*nz+iz])/5;			
+						}
+				for(ix=2;ix<nx-2;ix++)
+					for(iz=2;iz<nz-2;iz++)	
+						wf2[ix*nz+iz]=wf1[ix*nz+iz];
+		}	
+//exchange
+		for(int ix=0;ix<nx;ix++)
+			for(int iz=0;iz<nz;iz++)
+				wf[ix*nz+iz]=wf2[ix*nz+iz];
+
+		free1float(wf1);
+		free1float(wf2);
+
+}
+
+
+
+////  caculate max or min or average
+float caculate_average(float *matrix,int nx,int nz)
+{
+	float average;
+	float sum;
+	sum=0;
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=10;iz<nz;iz++)
+			{
+				sum+=matrix[ix*nz+iz];
+			}
+
+	average=sum*1.0/(nz-10)/nx;
+	
+	return(average);	
+}
+
+float caculate_average_new(float *matrix,int nx,int nz)
+{
+	float average;
+	float sum;
+	sum=0;
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			{
+				sum+=matrix[ix*nz+iz];
+			}
+
+	average=sum*1.0/nz/nx;
+	
+	return(average);	
+}
+
+float cpu_caculate_max(float *shotgather,int nx,int nz)
+{
+	float max;
+	int ix,iz;
+	int in_idx;
+	max=0;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			{
+				in_idx=ix*nz+iz;
+				if(shotgather[in_idx]>max)	max=shotgather[in_idx];
+			}
+			
+	return(max);
+}
+
+float cpu_caculate_min(float *shotgather,int nx,int nz)
+{
+	float min;
+	int ix,iz;
+	int in_idx;
+	min=0;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+		{
+			in_idx=ix*nz+iz;
+			if(shotgather[in_idx]<min)	min=shotgather[in_idx];
+		}
+			
+	return(min);
+}
+
+
+///// sort one/two dimension array along x or z direction
+void sort_x(float *shotgather,int nx,int nz,int location_x,char *filename)
+{
+	
+	float *matrix;
+	matrix=alloc1float(nz);
+
+	int iz;
+	for(iz=0;iz<nz;iz++)
+		matrix[iz]=shotgather[location_x*nz+iz];
+
+	write_file_1d(matrix,nz,filename);
+	
+	free1float(matrix);
+}
+
+void sort_x_2d(float **shotgather,int nx,int nz,int location_x,char *filename)
+{
+	
+	float *matrix;
+	matrix=alloc1float(nz);
+
+	int iz;
+	for(iz=0;iz<nz;iz++)
+		matrix[iz]=shotgather[iz][location_x];
+
+	write_file_1d(matrix,nz,filename);
+	
+	free1float(matrix);
+}
+
+void sort_z(float *shotgather,int nx,int nz,int location_z,char *filename)
+{
+	
+	float *matrix;
+	matrix=alloc1float(nx);
+
+	int ix;
+	for(ix=0;ix<nx;ix++)
+		matrix[ix]=shotgather[ix*nz+location_z];
+
+	write_file_1d(matrix,nx,filename);
+	
+	free1float(matrix);
+}
+
+void sort_z_2d(float **shotgather,int nx,int nz,int location_z,char *filename)
+{
+	
+	float *matrix;
+	matrix=alloc1float(nx);
+
+	int ix;
+	for(ix=0;ix<nx;ix++)
+		matrix[ix]=shotgather[location_z][ix];
+
+	write_file_1d(matrix,nx,filename);
+	
+	free1float(matrix);
+}
+
+
+
+
+////zzzzz: the following is one dimesion Fourier transform  or reversal Fourier transform  and  suhilbt transform
+void DFT_real_to_complex_2d(float **result,complex **datanw,int nx,int nt,float dx,float dt)
+{
+	int ix,it,iw,nw;
+	nw=nt;
+	double change;
+	
+	for(ix=0;ix<nx;ix++)
+		for(iw=0;iw<nw;iw++)
+		{
+			datanw[iw][ix].r=0;
+			datanw[iw][ix].i=0;
+			for(it=0;it<nt;it++)
+			{
+				//dataout[i].r=dataout[i].r+tempc1[j]*cos(i*dk*offset[j])*space[j];
+				//dataout[i].i=dataout[i].i-tempc1[j]*sin(i*dk*offset[j])*space[j];
+				change=iw*it*2*PI/nt*1.0;
+				datanw[iw][ix].r=datanw[iw][ix].r+result[it][ix]*cos(change);
+				datanw[iw][ix].i=datanw[iw][ix].i-result[it][ix]*sin(change);
+			}
+		}
+}
+
+void DFT_complex_to_complex_2d(complex **result,complex **datanw,int nx,int nt,float dx,float dt)
+{
+	int ix,it,iw,nw;
+	nw=nt;
+	double change;
+
+	for(ix=0;ix<nx;ix++)
+		for(iw=0;iw<nw;iw++)
+		{
+			datanw[iw][ix].r=0;
+			datanw[iw][ix].i=0;
+			for(it=0;it<nt;it++)
+			{
+				//dataout[i].r=dataout[i].r+tempc1[j]*cos(i*dk*offset[j])*space[j];
+				//dataout[i].i=dataout[i].i-tempc1[j]*sin(i*dk*offset[j])*space[j];
+				change=iw*it*2*PI/nt*1.0;
+				datanw[iw][ix].r=datanw[iw][ix].r+(result[it][ix].r*cos(change)+result[it][ix].i*sin(change));
+				datanw[iw][ix].i=datanw[iw][ix].i+(result[it][ix].i*cos(change)-result[it][ix].r*sin(change));
+			}
+		}
+}
+
+void NDFT_complex_to_real_2d(float **result,complex **datanw,int nx,int nt,float dx,float dt)
+{
+	int ix,it,iw,nw;
+	nw=nt;
+	double change;
+	
+	for(ix=0;ix<nx;ix++)
+		for(it=0;it<nt;it++)
+		{
+			result[it][ix]=0.0;
+			for(iw=0;iw<nw;iw++)
+			{	
+				change=iw*it*2*PI/nt*1.0;
+			
+				result[it][ix]=result[it][ix]+(datanw[iw][ix].r*cos(change)-datanw[iw][ix].i*sin(change));
+			}
+		}
+		
+	for(ix=0;ix<nx;ix++)
+		for(it=0;it<nt;it++)
+			result[it][ix]=result[it][ix]*1.0/nt;
+}
+
+void DFT_real_to_complex_1d(float *result_old,complex *result_nw,int nt,int nw,float dt)
+{
+	int it,iw;
+	
+	double change;
+		
+	for(iw=0;iw<nw;iw++)
+		{
+			result_nw[iw].r=0;
+			result_nw[iw].i=0;
+			for(it=0;it<nt;it++)
+			{
+				change=iw*it*2*PI/nt*1.0;
+				result_nw[iw].r=result_nw[iw].r+result_old[it]*cos(change);
+				result_nw[iw].i=result_nw[iw].i-result_old[it]*sin(change);
+			}
+		}
+}
+
+void DFT_complex_to_complex_1d(complex *result_old,complex *result_nw,int nt,int nw,float dt)
+{
+	int it,iw;
+	
+	double change;
+	
+		for(iw=0;iw<nw;iw++)
+		{
+			result_nw[iw].r=0;
+			result_nw[iw].i=0;
+			for(it=0;it<nt;it++)
+			{			
+				change=iw*it*2*PI/nt*1.0;
+				
+				result_nw[iw].r=result_nw[iw].r+(result_old[it].r*cos(change)+result_old[it].i*sin(change));
+				
+				result_nw[iw].i=result_nw[iw].i+(result_old[it].i*cos(change)-result_old[it].r*sin(change));
+			}
+		}
+}
+
+void NDFT_complex_to_real_1d(float *result_old,complex *result_nw,int nt,int nw,float dt)
+{
+	int it,iw;
+
+	double change;
+	
+	for(it=0;it<nt;it++)
+		{
+			result_old[it]=0.0;
+			for(iw=0;iw<nw;iw++)
+			{	
+				change=iw*it*2*PI/nt*1.0;
+			
+				result_old[it]=result_old[it]+(result_nw[iw].r*cos(change)-result_nw[iw].i*sin(change));
+			}
+		}
+		
+	for(it=0;it<nt;it++)
+		result_old[it]=result_old[it]*1.0/nt;
+}
+
+void suhilbt(float *result_old,float *result_h,int nx_append,int nz_append,int nx,int nz,int boundary_left,int boundary_up,float dx,float dz)
+{
+	int ix,iz,iw;
+	int nw,nt;
+	nt=nz;
+	
+	float **result;
+	result=alloc2float(nx,nz);
+	
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			result[iz][ix]=result_old[(ix+boundary_left)*nz_append+iz+boundary_up];
+					
+//for convenience we use it replace with iz
+	nw=nt;
+	
+	complex **datanw;
+	datanw=alloc2complex(nx,nw);
+	
+	DFT_real_to_complex_2d(result,datanw,nx,nt,dx,dz);
+	
+//hilbert transform
+	float change_r,change_i;
+		
+	for(ix=0;ix<nx;ix++)
+		for(iw=0;iw<nw/2;iw++)
+			{
+				change_r=datanw[iw][ix].r;change_i=datanw[iw][ix].i;
+				datanw[iw][ix].r=change_i;
+				datanw[iw][ix].i=-1*change_r;
+			}
+	for(ix=0;ix<nx;ix++)
+		for(iw=nw/2;iw<nw;iw++)
+			{
+				change_r=datanw[iw][ix].r;change_i=datanw[iw][ix].i;
+				datanw[iw][ix].r=-1*change_i;
+				datanw[iw][ix].i=change_r;
+			}
+
+	NDFT_complex_to_real_2d(result,datanw,nx,nt,dx,dz);
+	
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			result_h[(ix+boundary_left)*nz_append+iz+boundary_up]=result[iz][ix];	
+	
+	free2float(result);
+	free2complex(datanw);	
+
+}
+
+
+
+
+///intergrating_seismic  and derivation 
+void intergrating_seismic(float *shotgather,int lt,int receiver_num)
+{
+		int ix,it;
+		int i,j;
+		float *exchange;
+		exchange=alloc1float(lt);
+		set_zero_1d(exchange,lt);
+
+		for(ix=0;ix<receiver_num;ix++)	
+		{
+			for(it=0;it<lt;it++)				
+				exchange[it]=shotgather[ix*lt+it];
+			for(i=0;i<lt;i++)
+				for(j=0;j<i;j++)
+					shotgather[ix*lt+i]+=exchange[j];	
+		}		
+			
+		free1float(exchange);
+}
+
+void derivation(float *wavelet,int wavelet_length,float *coe)
+{
+	int ix;
+	float *matrix;
+	matrix=alloc1float(wavelet_length);
+	set_zero_1d(matrix,wavelet_length);
+
+	for(ix=6;ix<wavelet_length;ix++)
+		matrix[ix]=matrix[ix]+coe[1]*(wavelet[ix]-wavelet[ix-1])+coe[2]*(wavelet[ix+1]-wavelet[ix-2])+coe[3]*(wavelet[ix+2]-wavelet[ix-3])+coe[4]*(wavelet[ix+3]-wavelet[ix-4])+coe[5]*(wavelet[ix+4]-wavelet[ix-5])+coe[6]*(wavelet[ix+5]-wavelet[ix-6]);
+	
+	for(ix=6;ix<wavelet_length;ix++)
+		wavelet[ix]=matrix[ix];
+}
+
+
+
+
+/////cpu_laplace based on two or four order
+void cpu_laplace(float *result,float *velocity,int nx,int nz,int nx_append,int nz_append,int boundary_left,int boundary_up,float dx,float dz)
+{
+	int ix,iz,in_idx;
+	float v;
+	float *result1;
+	result1=alloc1float(nx*nz);
+	memset((void *)(result1),0,nx*nz*sizeof (float));
+
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			{
+				in_idx=ix*nz+iz;
+				if(ix==0||iz==0||ix==nx-1||iz==nz-1)	result1[in_idx]=-1*result[in_idx];
+				//t[iz][ix]=-(r[iz][ix+1]+r[iz][ix-1]-2*r[iz][ix])/dx2 - (r[iz+1][ix]+r[iz-1][ix]-2*r[iz][ix])/dz2;
+				else	result1[in_idx]=-1*((result[in_idx+nz]+result[in_idx-nz]-2*result[in_idx])/dx/dx+(result[in_idx+1]+result[in_idx-1]-2*result[in_idx])/dz/dz);
+				//t[iz][ix]=-(r[iz][ix+1]+r[iz][ix-1]+r[iz+1][ix]+r[iz-1][ix]-4*r[iz][ix])/dx2 - (r[iz][ix+1]+r[iz][ix-1]+r[iz+1][ix]+r[iz-1][ix]-4*r[iz][ix])/dz2
+				//else	result1[in_idx]=-1*((result[in_idx+nz]+result[in_idx-nz]+result[in_idx+1]+result[in_idx-1]-4*result[in_idx])/dx/dx+(result[in_idx+nz]+result[in_idx-nz]+result[in_idx+1]+result[in_idx-1]-4*result[in_idx])/dz/dz);
+			}
+////it's purpose to avoid boundary effect	
+	
+		for(iz=0;iz<nz;iz++)
+		{
+				result1[iz]=result1[nz+iz];
+				result1[(nx-1)*nz+iz]=result1[(nx-2)*nz+iz];
+				result1[iz*nz]=result1[iz*nz+1];
+				result1[iz*nz+nz-1]=result1[iz*nz+nz-2];
+		}
+			
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			{
+				v=velocity[(ix+boundary_left)*nz_append+iz+boundary_up];
+				result[ix*nz+iz]=v*v*result1[ix*nz+iz]/4;		
+			}
+			
+			
+	free1float(result1);
+}
+
+
+
+
+///two program for extracting angle domain image gathers
+void linear_interpolation(float *initial1,int nx,int nz,int angle_radius)
+{
+	int ix,iz;
+
+	float **result1,**result2;;
+	result1=alloc2float(nx,nz);
+	result2=alloc2float(nx,nz);
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			{
+				result1[iz][ix]=initial1[ix*nz+iz];
+				result2[iz][ix]=initial1[ix*nz+iz];
+			}
+	for(ix=2;ix<nx-2;ix++)
+		for(iz=2;iz<nz-2;iz++)
+			{
+				if(result1[iz][ix]==0&&ix!=angle_radius-1)	result2[iz][ix]=(result1[iz][ix+1]+result1[iz][ix-1]+result1[iz][ix+2]+result1[iz][ix-2])/4.0;
+			}
+						
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			initial1[ix*nz+iz]=result2[iz][ix];
+
+	free2float(result1);
+	free2float(result2);
+}
+
+void add_cdp(float *r_adcigs,float *sum_cdp_pp,int nx,int nz,int id,int cdp_num,int angle_radius)
+{
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			sum_cdp_pp[(ix+id*nx)*nz+iz]=r_adcigs[ix*nz+iz];
+}
+
+
+
+
+////exchange to reduce nx_append to nx ///// nz_append to nz
+void exchange(float *matrix1,float *matrix2,int nx,int nz,int nx_append,int nz_append,int boundary_left,int boundary_up)
+{
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			matrix2[ix*nz+iz]=matrix1[(ix+boundary_left)*nz_append+iz+boundary_up];
+}
+/////  accumulation
+void sum_result(float *result,float *wf,int nx,int nz)
+{
+	int ix,iz;
+	for(ix=0;ix<nx;ix++)
+		for(iz=0;iz<nz;iz++)
+			result[ix*nz+iz]+=wf[ix*nz+iz];
+}
+
+void sum_result_new(float *result,float *wf,int nx,int nz,int imaging_size,int imaging_start)
+{
+	int ix,iz;
+	for(ix=0;ix<imaging_size;ix++)
+		for(iz=0;iz<nz;iz++)
+			result[(ix+imaging_start)*nz+iz]+=wf[ix*nz+iz];
+}
+void sum_adcigs_new(float *adcigs_pp,float *r_adcigs_pp,int nx,int nz,int angle_num,int imaging_size,int imaging_start)
+{
+	int ix,iz,iangle;
+	for(iangle=0;iangle<angle_num*2;iangle++)
+		for(ix=0;ix<imaging_size;ix++)
+			for(iz=0;iz<nz;iz++)		
+				adcigs_pp[iangle*nx*nz+(ix+imaging_start)*nz+iz]+=r_adcigs_pp[iangle*nx*nz+ix*nz+iz];		
+}
+
+void cpu_output_cdp(float *adcigs_pp,float *cdp_all,float *cdp_radius,int cdp_location,int angle_num,int angle_radius,int nx,int nz)
+/////cpu_output_cdp(	   adcigs_pp,	  cdp_all,	      cdp_radius,   cdp_location[id],angle_num,	   angle_radius,    nx,    nz);
+{
+	int iz,iangle;
+	
+	for(iangle=0;iangle<angle_num*2;iangle++)
+		for(iz=0;iz<nz;iz++)
+			cdp_all[iangle*nz+iz]=adcigs_pp[iangle*nx*nz+cdp_location*nz+iz];
+			
+	for(iangle=angle_num-angle_radius;iangle<angle_num+angle_radius;iangle++)	
+		for(iz=0;iz<nz;iz++)
+			cdp_all[iangle*nz+iz]=adcigs_pp[iangle*nx*nz+cdp_location*nz+iz];	
+}
+
+void sum_cpu_output_cdp(float *cdp_all,float *cdp_radius,float *sum_cdp_ps_all,float *sum_cdp_ps_radius,int angle_num,int angle_radius,int nz,int id,int cdp_num)
+/////sum_cpu_output_cdp		 cdp_all,	    cdp_radius,	    sum_cdp_ps_all,	  sum_cdp_ps_radius,	angle_num,	  angle_radius,	 nz,	  id,	   cdp_num)
+{
+	int ix,iz;
+	for(ix=0;ix<2*angle_num;ix++)
+		for(iz=0;iz<nz;iz++)
+			sum_cdp_ps_all[(ix+id*2*angle_num)*nz+iz]=cdp_all[ix*nz+iz];
+
+	for(ix=0;ix<2*angle_radius;ix++)
+		for(iz=0;iz<nz;iz++)
+			sum_cdp_ps_radius[(ix+id*2*angle_radius)*nz+iz]=cdp_all[ix*nz+iz];
+}
+
+void cpu_replace(float *velocity,float *s_velocity,int nx_append,int nz_append)
+{
+	int ix,iz;
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+		{
+			s_velocity[ix*nz_append+iz]=velocity[ix*nz_append+iz];
+		}
+}
+
+void vp_set_vs(float *velocity,float *velocity1,int nx_append,int nz_append)
+{
+	int ix,iz;
+	
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+		{
+			velocity1[ix*nz_append+iz]=velocity[ix*nz_append+iz]/sqrt(3)*1.0;
+		}
+}
+
+void vp_set_density(float *velocity,float *s_density,int nx_append,int nz_append)
+{
+	int ix,iz;
+	
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+		{
+			s_density[ix*nz_append+iz]=1000*0.23*sqrt(sqrt(velocity[ix*nz_append+iz]));
+	
+			//s_density[ix*nz_append+iz]=1000;
+		
+			//s_density[ix*nz_append+iz]=1500;
+
+			//s_density[ix*nz_append+iz]=1;
+		}
+}
+
+void vp_set_density_acousitc(float *velocity,float *s_density,int nx_append,int nz_append)
+{
+	int ix,iz;
+	
+	for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+		{
+			s_density[ix*nz_append+iz]=1000*0.23*sqrt(sqrt(velocity[ix*nz_append+iz]));
+			
+			//s_density[ix*nz_append+iz]=1000;
+		}
+}
+
+void cpu_cal_perturb_velocity_to_velocity(float *velocity,float *velocity1,float *density,float *s_velocity,float *s_velocity1,float *s_density,int nx,int nz,int nx_append,int nz_append,int boundary_left,int boundary_up,int p_vp,int p_vs,int p_density,int mark)
+{
+		int ix,iz;
+		int id;	
+		for(ix=0;ix<nx_append;ix++)
+		for(iz=0;iz<nz_append;iz++)
+		{
+			id=ix*nz_append+iz;	
+			s_velocity[id]=velocity[id];
+			s_velocity1[id]=velocity1[id];
+			s_density[id]=density[id];
+		}
+
+		if(mark==1)
+		{	
+			id=(boundary_left+nx/2)*nz_append+boundary_up+2*nz/4;	
+			s_velocity[id]=s_velocity[id]+p_vp;		
+		}
+
+		if(mark==2)
+		{	
+			id=(boundary_left+nx/2)*nz_append+boundary_up+2*nz/4;	
+			s_velocity1[id]=s_velocity1[id]+p_vs;				
+		}
+
+		if(mark==3)
+		{	
+			id=(boundary_left+nx/2)*nz_append+boundary_up+2*nz/4;	
+			s_density[id]=s_density[id]+p_density;
+		}
+
+
+}
+
+
+void cal_cpu_error_random(float *error_random,int amplitude_error_number,int receiver_num,int receiver_interval)
+{
+		srand((unsigned)time(NULL));
+
+		int ix;
+
+		int change;
+
+		int count1=0,count2=0;
+
+		int *ranc;
+		ranc=alloc1int(amplitude_error_number);
+
+		//float *ranc1;
+		//ranc1=alloc1float(amplitude_error_number);
+		
+		int *ranc1;
+		ranc1=alloc1int(amplitude_error_number);
+
+
+		for(ix=0;ix<amplitude_error_number;ix++)
+		{
+			ranc[ix]=rand()%receiver_num;
+			
+			//printf("ranc[ix]=%d\n",ranc[ix]);
+		}
+
+		for(ix=0;ix<amplitude_error_number;ix++)
+		{
+			ranc1[ix]=rand()%100;
+
+			ranc1[ix]=ranc1[ix]%2;
+			
+			//printf("ranc[ix]=%d\n",ranc1[ix]);
+		}
+
+		for(ix=0;ix<amplitude_error_number;ix++)
+		{
+			change=int(ranc[ix]);
+
+			//error_random[change]=ranc1[ix];
+
+			if(ranc1[ix]==1)	
+			{
+				error_random[change]=6;
+				count1++;
+			}
+
+			if(ranc1[ix]!=1)
+			{
+				error_random[change]=1.0/6;//////1.0/6  is important
+				count2++;
+			}
+		}
+
+		for(ix=0;ix<receiver_num;ix++)
+		{
+			if(error_random[ix]==0)		error_random[ix]=1.0;
+		}
+
+		printf("count1=%d\n",count1);
+		printf("count2=%d\n",count2);
+		
+		free1int(ranc);
+		//free1float(ranc1);
+		free1int(ranc1);
+}
+
+void cal_cpu_shot_scale(float *shot_scale_h,int shot_num,int shot_scale)
+{
+		srand((unsigned)time(NULL));
+
+		int ix;
+
+		//int change;
+
+		int *ranc;
+		ranc=alloc1int(shot_num);
+
+		//float *ranc1;
+		//ranc1=alloc1float(amplitude_error_number);
+
+
+		for(ix=0;ix<shot_num;ix++)
+		{
+			ranc[ix]=rand()%(shot_scale)+1;
+		}
+
+		
+		for(ix=0;ix<shot_num;ix++)
+		{
+			shot_scale_h[ix]=ranc[ix];
+
+			printf("shot_scale_h[ix]=%f\n",shot_scale_h[ix]);
+		}	
+		
+		free1int(ranc);
+		//free1float(ranc1);
+		//free1int(ranc1);
+
+
+}
