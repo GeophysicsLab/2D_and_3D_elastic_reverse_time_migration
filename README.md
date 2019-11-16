@@ -3,4 +3,4 @@
 I utilize the GPUs to speed up all the elastic wavefield extrapolations and application of the imaging conditions in the 3D case.
 
 Note:
-     2D_elastic_RTM programa can also implement elastic and viscoelastic LSRTM
+     2D_elastic_RTM program can also implement elastic and viscoelastic LSRTM
