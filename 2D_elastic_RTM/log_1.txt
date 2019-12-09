@@ -1,4 +1,0 @@
-vs has been joined
-density has been joined
-inversion parameter is impedance
-inversion has not density
